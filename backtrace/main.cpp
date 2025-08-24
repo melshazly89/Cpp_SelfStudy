@@ -9,16 +9,13 @@ using namespace std;
 #define PRINT_BT     backtrace bk = backtrace();\
                      bk.printbtrace();
 
+
+
 class backtrace{
     public:
-        const string funcname;
-        static string bt;
-        static string bt_exit;
         static queue<string> bk_callfunc;
         backtrace();
         void printbtrace();
-
-
 };
 
 class enterFn:public backtrace
@@ -26,7 +23,6 @@ class enterFn:public backtrace
     public :
         const string funcname;
         enterFn(const string& funcname);
-
 };
 
 class exitFn:public backtrace
@@ -43,25 +39,24 @@ backtrace::backtrace()
     /*DO NOTHING */
 }
 queue<string> backtrace::bk_callfunc;
-string backtrace::bt;
 void backtrace::printbtrace()
 {
     int lcount = 0;
-    bt+="Backtrace as follows :\n";
+    string output = "Backtrace as follows :\n";
     while (!bk_callfunc.empty())
     {
-        bt+=to_string(lcount) + " - " + bk_callfunc.front()+"\n";
+        output+=to_string(lcount) + " - " + bk_callfunc.front()+"\n";
         bk_callfunc.pop();
         lcount++;
     }
-    cout << bt <<endl;
-    cout << "Back Trace is Finsihed" <<endl;
+    cout << output <<endl;
+    cout << "Back Trace is Finished" <<endl;
     
 
 }
 enterFn::enterFn(const string& funcname):funcname(funcname)
 {
-    bt += "Enter to [" + funcname + "]\n";
+    cout << "Enter to [" + funcname + "]\n";
     bk_callfunc.push(funcname);
     
 }
