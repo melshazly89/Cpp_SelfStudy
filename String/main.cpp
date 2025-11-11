@@ -5,113 +5,107 @@
 #include <string.h>
 using namespace std;
 
-
-class String
-{
+class String{
     private:
-        char* str;
-        int m_length;
+        char* m_data;
     public:
-        String (char* str)
+        String(char* data):m_data(data)    
         {
-            std::cout << "calling constructor" << std::endl;
-            this->m_length = strlen(str);
-            this->str = new char (m_length + 1);
-            strcpy(this->str,str);
+            //std::cout<<"Constructor called!"<<std::endl;
+            this->m_data = new char [strlen(data)+1];
+            strcpy(m_data,data);
         }
-        String (const String& copy)
+        void display()
         {
-            /*Deep Copy constructor*/
-            std::cout << "calling copy constructor" << std::endl;
-            this->m_length = copy.m_length;
-            /*Dynamic allocation in heap */
-            this->str =new char(m_length+1);
-            strcpy(this->str,copy.str);
-
+            std::cout<<"Result:" <<m_data<<std::endl;
         }
-
-        String (String&& move)
+        void setchar(char value)
         {
-            std::cout << "calling move constructor" << std::endl;
-            this->m_length = move.m_length;
-            this->str = move.str;
-            move.m_length = 0;
-            move.str = nullptr;
-
+            *m_data = value;
         }
-
-        String& operator=(String&& move)
+        String(const String& other) // Copy Constructor
         {
-            std::cout << "Assignation Move constructor" << std::endl;
-            if (&move != this)
+            //std::cout<<"Copy Constructor called!"<<std::endl;
+            //deep copy
+            m_data = new char [strlen(other.m_data)+1];
+            strcpy(m_data,other.m_data);
+        }
+        String& operator=(const String& other) // Copy Assignment Operator
+        {
+            //std::cout<<"Copy Assignment Operator called!"<<std::endl;
+            if(this != &other)
             {
-                this->m_length = move.m_length;
-                move.m_length = 0;
-                if (this->str)
-                {
-                    delete [] str;
-                }
-                this->str = move.str;
-                move.str = nullptr;
+                //deep copy
+                m_data = new char [strlen(other.m_data)+1];
+                strcpy(m_data,other.m_data);
             }
             return *this;
         }
-        String& operator=(const String& other)
+        ~String()
         {
-            std::cout << "Assignment Copy Constructor" << std::endl;
-            if (&other != this)
-            {
-                this->m_length = other.m_length;
-                if (this->str)
-                {
-                    delete [] this->str;
-                }
-                this->str =new char (m_length +1);
-                strcpy(this->str ,other.str);
-            }
+            //std::cout<<"Destructor called!"<<std::endl;
+            delete[] m_data;
+        }
+        String(String&& other) noexcept // Move Constructor
+        {
+            //std::cout<<"Move Constructor called!"<<std::endl;
+            m_data = other.m_data;
+            other.m_data = nullptr;
+        }
+        char operator[](int index)
+        {
+            /*Access String by index*/
+            return this->m_data[index];
+        }
+        const String &operator+=(const String &other)
+        {
+            std::cout<<"Concatenation Operator called!"<<std::endl;
+            size_t newLength = strlen(this->m_data) + strlen(other.m_data) + 1;
+            char* newData = new char[newLength];
+            strcpy(newData, this->m_data);
+            strcat(newData, other.m_data);
+            /*Move Concatenated Strings to Result*/
+            String temp(std::move(String{newData}));
+            /*Take Ownership*/
+            m_data = temp.m_data;
+            /*Prevent double deletion*/
+            temp.m_data = nullptr; 
             return *this;
         }
-        
         const bool operator>(const String& other)
         {
-            std::cout << strlen(this->str)  << " " << strlen(other.str) << std::endl;
-            return strlen(this->str) > strlen(other.str);
+            return strlen(this->m_data) > strlen(other.m_data);
 
         }
-        ~String ()
-        {
-            /*Destructor to free memory*/
-            std::cout << "calling destructor" << std::endl;
-            delete [] str;
-            str = nullptr;
-        }
-        void printString()
-        {
-            cout << str <<endl;
-        }
-        void set1stchar(char value)
-        {
-            *str=value;
-        }
 
+    
 };
+
 
 int main()
 {
-    char array[]="Hello";
-    String t1{array};
-    // String t2(t1);   /*Copy Constructor*/ /*Shallow Copy*/
-    // t1.set1stchar('M'); /*Change in t1*/
-    // t1.printString();
-    // t2.printString();
-    // t2=t1;
-    // t2.printString();
-
-    // String t3(std::move(t1));
-    // t3=std::move(t1);
-
-    String t4{array};
-    bool ret = t4 > t1;
-    std::cout << ret <<std::endl;
+    char array[] = "Hello World!";
+    String str1 {array};
+    /*shallow Copy*/
+    /*Copy Constructor*/
+    String str2(str1);
+    str1.setchar('@');
+    str1.display();
+    str2.display();
+    /*Copy Assignment */
+    String str3 = str1;
+    str3.display();
+    /*Move Constructor*/
+    String str4 = std::move(str1);
+    str4.display();
+    std::cout<<"Third character in str4:"<<str4[2]<<std::endl;
+    String str5 = String{const_cast<char*>(" Goodbye!")};
+    String str6 = String{const_cast<char*>(" Mahmoud")};
+    /*Concatenate Strings*/
+    str5 += str6 ;
+    str5.display();
+    /*Compare between Strings*/
+    bool resutl = str5 > str6 ;
+    std::cout<<"Comparison Result:"<<resutl<<std::endl;
     return 0;
 }
